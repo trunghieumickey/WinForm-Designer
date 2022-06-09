@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Reflection;
 
-namespace SWD4CS
+namespace WDDN
 {
     internal class cls_controls
     {
@@ -77,7 +77,7 @@ namespace SWD4CS
                 //}
                 //else
                 //{
-                //未対応
+                //Not compatible
                 form.mainForm!.Add_Log("Unimplemented Control : " + ctrlInfo.ctrlClassName);
                 //Console.WriteLine("Unimplemented Control : " + ctrlInfo.ctrlClassName);
                 //}
@@ -164,7 +164,7 @@ namespace SWD4CS
 
             form!.CtrlItems.Add(this);
 
-            // Property設定
+            // Property Settings
             for (int i = 0; i < ctrlInfo.propertyName.Count; i++)
             {
                 log += SetCtrlProperty(this.ctrl, ctrlInfo.propertyName[i], ctrlInfo.strProperty[i]);
@@ -772,7 +772,7 @@ namespace SWD4CS
 
         internal void SetControls(CONTROL_INFO ctrlInfo)
         {
-            //add設定
+            //Add Settings
             for (int i = 0; i < ctrlInfo.addCtrlName.Count; i++)
             {
                 Control? parent = this.ctrl;
@@ -798,7 +798,7 @@ namespace SWD4CS
                 parent!.Controls.Add(child);
             }
 
-            // subadd設定(splitcontainer)
+            // subadd Settings (splitcontainer)
             for (int i = 0; i < ctrlInfo.subAdd_CtrlName.Count; i++)
             {
                 SplitContainer? parent = this.ctrl as SplitContainer;
@@ -1471,7 +1471,7 @@ namespace SWD4CS
         }
 
         // ****************************************************************************************
-        // コントロール追加時に下記を編集すること
+        // Edit the following when adding a control
         // ****************************************************************************************
         private bool Init(string className)
         {

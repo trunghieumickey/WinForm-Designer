@@ -1,7 +1,7 @@
 ﻿using System.Data;
 using System.Reflection;
 
-namespace SWD4CS
+namespace WDDN
 {
     public partial class cls_user_datagridview : DataGridView
     {

@@ -1,4 +1,4 @@
-﻿namespace SWD4CS
+﻿namespace WDDN
 {
     public struct CONTROL_INFO
     {
@@ -27,14 +27,19 @@
 
     internal class cls_file
     {
+
+        /// <summary>
+        /// opens designer file
+        /// </summary>
+        /// <returns></returns>
         internal static FILE_INFO OpenFile()
         {
             OpenFileDialog dlg = new()
             {
                 InitialDirectory = @"C:\",
-                Filter = "Designer.csファイル(*.Designer.cs;*.Designer.cs)|*.Designer.cs;*.Designer.cs",
+                Filter = "Designer.cs File(*.Designer.cs;*.Designer.cs)|*.Designer.cs;*.Designer.cs",
                 FilterIndex = 1,
-                Title = "開くファイルを選択してください",
+                Title = "Please select a file to open.",
                 RestoreDirectory = true
             };
             if (dlg.ShowDialog() != DialogResult.OK) { return new FILE_INFO(); }
@@ -47,6 +52,12 @@
             return ReadCode(fName);
         }
 
+
+        /// <summary>
+        /// Parse cs file
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         private static FILE_INFO ReadCode(string filePath)
         {
             FILE_INFO fileInfo = new();
@@ -119,8 +130,11 @@
             return fileInfo;
         }
 
+
+
         private static List<CONTROL_INFO> AnalysisCode(string line, List<CONTROL_INFO> lstCtrlInfo)
         {
+
             if (line.IndexOf("=") > -1 && line.IndexOf("new") > -1 &&
                 line.IndexOf("System.Windows.Forms.") > -1 && line.IndexOf("+=") == -1)
             {
@@ -171,7 +185,7 @@
 
         private static List<CONTROL_INFO> AnalysisCode_Control_SpecialProperty(string line, List<CONTROL_INFO> lstCtrlInfo)
         {
-            // 特殊Parent
+            // Special Parent
             string ctrlName, subAddRange_CtrlName, subAddRange_childCtrlName;
             string[] lineArray = splitAddRange(line);
 
@@ -246,7 +260,7 @@
             }
             else if (split2.Length == 4)
             {
-                // 特殊Property
+                // Special Property
                 //Console.WriteLine(line);
             }
             else
@@ -270,7 +284,7 @@
             string[] split2 = split1[0].Split('.');
             if (split2.Length == 2)
             {
-                // Control宣言 ctrlName, ctrlClassName
+                // Control declaration ctrlName, ctrlClassName
                 string ctrlName, ctrlClassName;
                 ctrlName = GetCtrlName(line, 0);
                 ctrlClassName = GetClassName(line);
@@ -280,7 +294,7 @@
             }
             else
             {
-                // 特殊Property
+                // Special Propertys
                 //Console.WriteLine(line);
             }
             return lstCtrlInfo;
@@ -442,13 +456,13 @@
             {
                 FileName = "Form1.Designer.cs",
                 InitialDirectory = @"C:\",
-                Filter = "Designer.csファイル(*.Designer.cs;*.Designer.cs)|*.Designer.cs;*.Designer.cs",
+                Filter = "Designer.cs file (*.Designer.cs;*.Designer.cs)|*.Designer.cs;*.Designer.cs",
                 FilterIndex = 1,
-                Title = "保存先のファイルを選択してください",
+                Title = "Please select a file",
                 RestoreDirectory = true
             };
 
-            //ダイアログを表示する
+            //Display a dialog box
             if (dlg.ShowDialog() == DialogResult.OK)
             {
                 File.WriteAllText(dlg.FileName, SourceCode);

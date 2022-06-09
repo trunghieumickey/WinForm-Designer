@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace SWD4CS
+namespace WDDN
 {
     internal class cls_userform : Panel
     {
@@ -15,7 +15,7 @@ namespace SWD4CS
         internal List<string> decFunc = new();
 
         // ****************************************************************************************
-        // コントロール追加時に下記を編集すること
+        // Edit the following when adding a control
         // ****************************************************************************************
         internal int cnt_Control = -1;
         internal int cnt_Button;
@@ -240,17 +240,17 @@ namespace SWD4CS
         }
         internal void Add_Controls(List<CONTROL_INFO> ctrlInfo)
         {
-            // コントロール全削除
+            // Delete all controls
             CtrlAllClear();
 
-            // Control作成
+            // Create Control
             for (int i = 0; i < ctrlInfo.Count; i++)
             {
                 _ = new cls_controls(this, memForm, ctrlInfo[i]);
             }
             this.Location = new Point(16, 16);
 
-            // その他設定
+            // Other settings
 
             for (int i = 0; i < ctrlInfo.Count; i++)
             {
@@ -265,7 +265,7 @@ namespace SWD4CS
                     }
                 }
             }
-            // selectbox設定
+            // selectbox settings
             for (int j = 0; j < CtrlItems.Count; j++)
             {
                 CtrlItems[j].InitSelectBox();
