@@ -1,31 +1,18 @@
-# SWD4CS
- * SWD4CSは、Simple WinForms Designer for CSharp (VSCode)の略  
- * VisualStudioは重いので、VSCodeをよく使う。がデザイナがない。  
- * デザイナの作り方が全く分からず、思い付くままに書いてみた。  
- * この作り方では複雑なものは無理。ちょっとしたツール程度なら使えるかも？
-  
-## 開発環境
- * Windows11 Home  
- * VisualStudio2022 C# → VSCode .net6.0
- 
-## スクリーンショット  
-![SWD4CS](https://user-images.githubusercontent.com/86605611/152679486-e8f7bbed-69b4-4186-b402-35d7bd2fec8f.png)
-![SWD4CS](https://user-images.githubusercontent.com/86605611/152784518-c135ec3a-e156-4163-8f8d-90cc023d8448.png)
-※ControlTreeは表示のみ  
+# WDDN
+WDDN or Winform Designer DotNet is a tool based on [SWD4CS](https://github.com/hry2566/SWD4CS) which is intended to be a light weight form creator/editor to be used outside of VisualStudio. Eventually i intend to add Powershell WinForm ability to this tool
 
-
-## 動画
- https://youtu.be/BJAhuU2W3uM  
- https://youtu.be/3LyjAvXLpYg  
- https://youtu.be/82qa0vOP_qk  
- https://youtu.be/FkDaMW4hGyk
+# Development environment
+ * Windows10+
+ * VisualStudio2022 C#
+ * .net6.0
  
-## ブログ
- https://danpapa-hry.hateblo.jp/entry/2022/02/23/210416
+## Screenshots  
+![WDDN](https://user-images.githubusercontent.com/86605611/152679486-e8f7bbed-69b4-4186-b402-35d7bd2fec8f.png)
+![WDDN](https://user-images.githubusercontent.com/86605611/152784518-c135ec3a-e156-4163-8f8d-90cc023d8448.png)
+Control Tree is display only
  
-## 実装
- ・ポトペタ  
- ・一部のプロパティ変更  
+## Implementation
+ ・Some property changes
  ・Button  
  ・CheckBox  
  ・CheckedListBox  
@@ -54,10 +41,10 @@
  ・TextBox  
  ・TreeView  
  ・VScrollBar  
- ・Designer.csファイルのRead/Write　~~（ただし、SWD4CS以外で編集したものは開けない）~~  
- ・他のコントローラー等は必要になったら追加する。
+ ・Designer.cs Read / Write ~~ ( Other edits other than WDDN cannot be opened ) ~~
+ ・Add other controllers as needed.
 
-## 対応プロパティ（Type）
+## Corresponding property（Type）
  ・System.Drawing.Point  
  ・System.Drawing.Size  
  ・System.String  
@@ -79,7 +66,7 @@
  ・System.Windows.Forms.AutoScaleMode  
  ・System.Drawing.Font  
 
-## コントロール追加方法 
- * 「// コントロール追加時に下記を編集すること」に追記。  
+## How to add a control
+* Added to "// Edit the following when adding a control".
 ・cls_form.cs  
 ・cls_control.cs  
