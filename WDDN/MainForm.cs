@@ -12,14 +12,23 @@ namespace WDDN
         internal cls_user_datagridview? eventView;
         private string sourceFileName = "";
 
+        public string DeletionKey = "Alt + Delete";
+        public string GCL = "CSharp";
+
         public MainForm()
         {
             InitializeComponent();
             Private2Internal_Controls();
             userForm.Init(this, designPage);
             cls_controls.AddToolList(ctrlLstBox);
-            cls_file.ReadIni(this, "SWD4CS.ini", mainWndSplitContainer, subWndSplitContainer);
+            cls_file.ReadIni(this, "WDDN.ini", mainWndSplitContainer, subWndSplitContainer);
             Run_CommandLine();
+
+            if (GCL == "Powershell")
+            {
+                designTab.TabPages.Remove(eventsPage);
+            }
+
             Application.ApplicationExit += new EventHandler(AppExit);
         }
         private void Private2Internal_Controls()
@@ -32,7 +41,7 @@ namespace WDDN
         }
         private void AppExit(object? sender, EventArgs e)
         {
-            cls_file.WriteIni(this, "SWD4CS.ini", mainWndSplitContainer, subWndSplitContainer);
+            cls_file.WriteIni(this, "WDDN.ini", mainWndSplitContainer, subWndSplitContainer);
         }
         private void Run_CommandLine()
         {
@@ -63,9 +72,21 @@ namespace WDDN
         }
         private void MainForm_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Alt && e.KeyCode == Keys.Delete && designTab.SelectedIndex == 0)
+            switch (DeletionKey)
             {
-                userForm.RemoveSelectedItem();
+                case "Delete":
+                    if (e.KeyCode == Keys.Delete && designTab.SelectedIndex == 0)
+                    {
+                        userForm.RemoveSelectedItem();
+                    }
+                    break;
+                default:
+                    if (e.Alt && e.KeyCode == Keys.Delete && designTab.SelectedIndex == 0)
+                    {
+                        userForm.RemoveSelectedItem();
+                    }
+                    break;
+
             }
         }
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
@@ -81,21 +102,42 @@ namespace WDDN
             {
                 cls_file.Save(sourceTxtBox.Text);
             }
-            Close();
         }
         private void designeTab_SelectedIndexChanged(object sender, EventArgs e)
         {
-            switch (designTab.SelectedIndex)
+
+            switch (GCL)
             {
-                case 1:
-                    if (fileInfo.source_base == null)
+                case "Powershell":
+                    switch (designTab.SelectedIndex)
                     {
-                        fileInfo.source_base = cls_file.NewFile();
+                        case 1:
+                            if (fileInfo.source_base == null)
+                            {
+                                fileInfo.source_base = cls_file.NewFile_Powershell();
+                            }
+                            sourceTxtBox.Text = Create_SourceCode_Powershell();
+                            break;
+                        case 2:
+                            eventTxtBox.Text = Create_EventCode_Powershell();
+                            break;
                     }
-                    sourceTxtBox.Text = Create_SourceCode();
                     break;
-                case 2:
-                    eventTxtBox.Text = Create_EventCode();
+                case "CSharp":
+                default:
+                    switch (designTab.SelectedIndex)
+                    {
+                        case 1:
+                            if (fileInfo.source_base == null)
+                            {
+                                fileInfo.source_base = cls_file.NewFile();
+                            }
+                            sourceTxtBox.Text = Create_SourceCode();
+                            break;
+                        case 2:
+                            eventTxtBox.Text = Create_EventCode();
+                            break;
+                    }
                     break;
             }
         }
@@ -174,6 +216,401 @@ namespace WDDN
                 }
             }
         }
+
+#region Powershell
+
+        private string Create_SourceCode_Powershell()
+        {
+            string source = "";
+            List<string> lstSuspend = new();
+            List<string> lstResume = new();
+            string space = "";
+
+            /*
+            if (fileInfo.source_base[0].IndexOf("`") == -1)
+            {
+                space = space.PadLeft(4);
+            }
+            else
+            {
+                space = space.PadLeft(0);
+            }
+            */
+
+            source = Create_Code_Instance_Powershell(source, space);
+            source = Create_Code_Suspend_Resume_Powershell(source, lstSuspend, lstResume, space);
+
+            // suspend
+            for (int i = 0; i < lstSuspend.Count; i++)
+            {
+                source += lstSuspend[i];
+            }
+
+            source = Create_Code_Property_Powershell(source, space);
+            source = Create_Code_FormProperty_Powershell(source, space);
+            source = Create_Code_FormAddControl_Powershell(source, space);
+            source += "\r\n";
+            source = Create_Code_EventsDec_Powershell(source, space);
+            source = Create_Code_FormEventsDec_Powershell(source, space);
+            source += "\r\n";
+
+            // resume
+            for (int i = 0; i < lstResume.Count; i++)
+            {
+                source += lstResume[i];
+            }
+
+            /*source = Create_Code_EventDeclaration_Powershell(source, space);
+
+            if (fileInfo.source_base[0].IndexOf(";") == -1)
+            {
+                source += "    }\r\n";
+            }
+            source += "}\r\n";
+            */
+            source += "\r\n[void]$Form.ShowDialog()\r\n";
+
+
+            // events function
+            //source = Create_Code_FuncDeclaration(source);
+            return source;
+        }
+
+        private string Create_Code_Instance_Powershell(string source, string space)
+        {
+            // Instance
+            for (int i = 0; i < fileInfo.source_base.Count; i++)
+            {
+                source += fileInfo.source_base[i] + "\r\n";
+            }
+
+            return source;
+        }
+
+        private string Create_Code_Suspend_Resume_Powershell(string source, List<string> lstSuspend, List<string> lstResume, string space)
+        {
+            // Suspend & resume
+            for (int i = 0; i < userForm.CtrlItems.Count; i++)
+            {
+                source += space + "$" + userForm.CtrlItems[i].ctrl!.Name + " = New-Object System.Windows.Forms." + userForm.CtrlItems[i].className + "\r\n";
+
+                List<string> className_group1 = new()
+                {
+                    "DataGridView",
+                    "PictureBox",
+                    "SplitContainer"
+                };
+                for (int j = 0; j < className_group1.Count; j++)
+                {
+                    if (userForm.CtrlItems[i].className == className_group1[j])
+                    {
+                        lstSuspend.Add("([System.ComponentModel.ISupportInitialize] $" + userForm.CtrlItems[i].ctrl!.Name + ").BeginInit()\r\n");
+                        lstResume.Add("([System.ComponentModel.ISupportInitialize] $" + userForm.CtrlItems[i].ctrl!.Name + ").EndInit()\r\n");
+                    }
+                }
+
+                List<string> className_group2 = new()
+                {
+                    "GroupBox",
+                    "Panel",
+                    "StatusStrip",
+                    "TabControl",
+                    "TabPage"
+                };
+                for (int j = 0; j < className_group2.Count; j++)
+                {
+                    if (userForm.CtrlItems[i].className == className_group2[j])
+                    {
+                        lstSuspend.Add("$" + userForm.CtrlItems[i].ctrl!.Name + ".SuspendLayout()\r\n");
+                        lstResume.Add("$" + userForm.CtrlItems[i].ctrl!.Name + ".ResumeLayout($false)\r\n");
+                    }
+                }
+
+                if (userForm.CtrlItems[i].className == "SplitContainer")
+                {
+                    lstSuspend.Add("$" + userForm.CtrlItems[i].ctrl!.Name + ".Panel1.SuspendLayout()\r\n");
+                    lstSuspend.Add("$" + userForm.CtrlItems[i].ctrl!.Name + ".Panel2.SuspendLayout()\r\n");
+                    lstSuspend.Add("$" + userForm.CtrlItems[i].ctrl!.Name + ".SuspendLayout()\r\n");
+                    lstResume.Add( "$" + userForm.CtrlItems[i].ctrl!.Name + ".Panel1.ResumeLayout($false)\r\n");
+                    lstResume.Add( "$" + userForm.CtrlItems[i].ctrl!.Name + ".Panel2.ResumeLayout($false)\r\n");
+                    lstResume.Add( "$" + userForm.CtrlItems[i].ctrl!.Name + ".ResumeLayout($false)\r\n");
+                }
+            }
+            lstSuspend.Add(space + "$Form.SuspendLayout()\r\n");
+            lstResume.Add(space + "$Form.ResumeLayout($false)\r\n");
+
+            return source;
+        }
+
+        private string Create_EventCode_Powershell()
+        {
+            List<string> decHandler = new();
+            List<string> decFunc = new();
+
+            Add_Declaration_Powershell(ref decHandler, ref decFunc);
+
+            if (decHandler.Count == 0) { return ""; }
+
+            if (fileInfo.source_base == null)
+            {
+                fileInfo.source_base = cls_file.NewFile();
+            }
+
+            string[] split = Create_SourceCode_Powershell().Split(Environment.NewLine);
+            string eventSource = Create_EventsSource_Powershell(split, decHandler, decFunc);
+
+            return eventSource;
+        }
+        private static string Create_EventsSource_Powershell(string[] split, List<string> decHandler, List<string> decFunc)
+        {
+            string eventSource = "";
+
+            for (int i = 0; i < 4; i++)
+            {
+                if (eventSource == "")
+                {
+                    eventSource = split[i];
+                }
+                else
+                {
+                    eventSource += Environment.NewLine + split[i];
+                }
+            }
+
+            eventSource += Environment.NewLine;
+            eventSource += "    private void InitializeEvents()" + Environment.NewLine;
+            eventSource += "    {" + Environment.NewLine;
+
+
+            for (int i = 0; i < decHandler.Count; i++)
+            {
+                eventSource += "        " + decHandler[i] + Environment.NewLine;
+            }
+
+            eventSource += "    }" + Environment.NewLine + Environment.NewLine;
+
+            for (int i = 0; i < decFunc.Count; i++)
+            {
+                eventSource += "    " + decFunc[i] + Environment.NewLine;
+                eventSource += "    {" + Environment.NewLine + Environment.NewLine;
+                eventSource += "    }" + Environment.NewLine + Environment.NewLine;
+            }
+
+            eventSource += "}" + Environment.NewLine;
+
+            return eventSource;
+        }
+        private void Add_Declaration_Powershell(ref List<string> decHandler, ref List<string> decFunc)
+        {
+            for (int i = 0; i < userForm.decHandler.Count; i++)
+            {
+                decHandler.Add(userForm.decHandler[i]);
+                decFunc.Add(userForm.decFunc[i]);
+            }
+
+            for (int j = 0; j < userForm.CtrlItems.Count; j++)
+            {
+                for (int i = 0; i < userForm.CtrlItems[j].decHandler.Count; i++)
+                {
+                    decHandler.Add(userForm.CtrlItems[j].decHandler[i]);
+                    decFunc.Add(userForm.CtrlItems[j].decFunc[i]);
+                }
+            }
+        }
+
+        private string Create_Code_Property_Powershell (string source, string space)
+        {
+            // Property
+            for (int i = 0; i < userForm.CtrlItems.Count; i++)
+            {
+                string memCode = "";
+                source += space + "##\r\n";
+                source += space + "## " + userForm.CtrlItems[i].ctrl!.Name + "\r\n";
+                source += space + "##\r\n";
+
+                source = Create_Code_AddControl_Powershell(source, space, i);
+
+                // Property
+                foreach (PropertyInfo item in userForm.CtrlItems[i].ctrl!.GetType().GetProperties())
+                {
+                    if (cls_controls.HideProperty(item.Name))
+                    {
+                        Get_Code_Property_Powershell(ref source, ref memCode, item, userForm.CtrlItems[i], space);
+                    }
+                }
+                if (memCode != "")
+                {
+                    source += memCode;
+                }
+
+                //source = Create_Code_EventsDec_Powershell(source, space, userForm.CtrlItems[i]);
+            }
+            return source;
+        }
+
+        private string Create_Code_AddControl_Powershell(string source, string space, int i)
+        {
+            // AddControl
+            for (int j = 0; j < userForm.CtrlItems.Count; j++)
+            {
+                if (userForm.CtrlItems[i].ctrl!.Name == userForm.CtrlItems[j].ctrl!.Parent.Name)
+                {
+                    source += space + "$" + userForm.CtrlItems[i].ctrl!.Name + ".Controls.Add($" + userForm.CtrlItems[j].ctrl!.Name + ")\r\n";
+                }
+                else if (userForm.CtrlItems[i].ctrl!.Name == userForm.CtrlItems[j].ctrl!.Parent.Parent.Name)
+                {
+                    if (userForm.CtrlItems[j].ctrl!.Parent.Name.IndexOf("Panel1") > -1)
+                    {
+                        source += space + "$" + userForm.CtrlItems[i].ctrl!.Name + ".Panel1.Controls.Add($" + userForm.CtrlItems[j].ctrl!.Name + ")\r\n";
+                    }
+                    else if (userForm.CtrlItems[j].ctrl!.Parent.Name.IndexOf("Panel2") > -1)
+                    {
+                        source += space + "$" + userForm.CtrlItems[i].ctrl!.Name + ".Panel2.Controls.Add($" + userForm.CtrlItems[j].ctrl!.Name + ")\r\n";
+                    }
+                }
+            }
+            return source;
+        }
+
+        private static void Get_Code_Property_Powershell(ref string source, ref string memCode, PropertyInfo item, cls_controls ctrlItems, string space)
+        {
+            Control? baseCtrl = ctrlItems.GetBaseCtrl();
+            if (item.GetValue(ctrlItems.ctrl) != null && item.GetValue(baseCtrl) != null)
+            {
+                if (item.GetValue(ctrlItems.ctrl)!.ToString() != item.GetValue(baseCtrl)!.ToString())
+                {
+                    string str1 = space + "$" + ctrlItems.ctrl!.Name + "." + item.Name;
+                    string strProperty = cls_controls.Property2String_Powershell(ctrlItems.ctrl!, item);
+                    if (strProperty != "")
+                    {
+                        if (item.Name != "SplitterDistance" && item.Name != "Anchor")
+                        {
+                            source += str1 + strProperty + "\r\n";
+                        }
+                        else
+                        {
+                            memCode += str1 + strProperty + "\r\n";
+                        }
+                    }
+                }
+            }
+        }
+
+        private string Create_Code_EventsDec_Powershell (string source, string space)
+        {
+            for (int i = 0; i < userForm.CtrlItems.Count; i++)
+            {
+                for (int j = 0; j < userForm.CtrlItems[i].decHandler.Count; j++)
+                {
+                    source += userForm.CtrlItems[i].decHandler[j] + "\r\n";
+                }
+            }
+            return source;
+        }
+
+        private string Create_Code_FormProperty_Powershell(string source, string space)
+        {
+            // form-property
+            source += space + "##\r\n";
+            source += space + "## form\r\n";
+            source += space + "##\r\n";
+
+            foreach (PropertyInfo item in userForm!.memForm.GetType().GetProperties())
+            {
+                if (cls_controls.HideProperty(item.Name))
+                {
+                    Control? baseForm = new Form();
+                    Control memForm = userForm.memForm as Control;
+
+                    if (item.GetValue(memForm) != null && item.GetValue(baseForm) != null)
+                    {
+                        if (item.GetValue(memForm)!.ToString() != item.GetValue(baseForm)!.ToString())
+                        {
+                            string str1 = space + "$Form." + item.Name;
+                            string strProperty = cls_controls.Property2String_Powershell(memForm, item);
+
+                            if (strProperty != "")
+                            {
+                                source += str1 + strProperty + "\r\n";
+                            }
+                        }
+                    }
+                }
+            }
+            //source = Create_Code_FormEventsDec_Powershell(source, space, userForm);
+            return source;
+        }
+
+        private string Create_Code_FormAddControl_Powershell(string source, string space)
+        {
+            // AddControl
+            for (int i = 0; i < userForm.CtrlItems.Count; i++)
+            {
+                if (userForm.CtrlItems[i].ctrl!.Parent == userForm)
+                {
+                    source += space + "$Form.Controls.Add($" + userForm.CtrlItems[i].ctrl!.Name + ")\r\n";
+                }
+            }
+            return source;
+        }
+
+        private string Create_Code_EventDeclaration_Powershell(string source, string space)
+        {
+            source += space + "}\r\n";
+            source += "\r\n";
+
+            // declaration
+            for (int i = 0; i < userForm.CtrlItems.Count; i++)
+            {
+                string[] split = userForm.CtrlItems[i].ctrl!.GetType().ToString().Split(".");
+                string dec = split[split.Length - 1];
+                //source += space + "private " + dec + " " + userForm.CtrlItems[i].ctrl!.Name + ";\r\n";
+
+            }
+            return source;
+        }
+
+        private string Create_Code_FuncDeclaration_Powershell(string source)
+        {
+            // control
+            for (int i = 0; i < userForm.CtrlItems.Count; i++)
+            {
+                for (int j = 0; j < userForm.CtrlItems[i].decFunc.Count; j++)
+                {
+                    source += "" + userForm.CtrlItems[i].decFunc[j] + "\r\n";
+                    source += "{\r\n";
+                    source += "r\n";
+                    source += "}\r\n";
+                    source += "\r\n";
+                }
+            }
+
+            // form
+            for (int i = 0; i < userForm.decFunc.Count; i++)
+            {
+                source += "//" + userForm.decFunc[i] + "\r\n";
+                source += "//{\r\n";
+                source += "//\r\n";
+                source += "//}\r\n";
+                source += "\r\n";
+            }
+
+            return source;
+        }
+        private string Create_Code_FormEventsDec_Powershell(string source, string space)
+        {
+
+            for (int i = 0; i < userForm.decHandler.Count; i++)
+            {
+                source += space + userForm.decHandler[i] + "\r\n";
+            }
+            return source;
+        }
+
+        #endregion
+
+        #region CSharp
+
         private string Create_SourceCode()
         {
             string source = "";
@@ -466,6 +903,7 @@ namespace WDDN
 
             return source;
         }
+        #endregion
         private void closeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Close();
@@ -556,6 +994,34 @@ namespace WDDN
         private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
         {
             userForm.RemoveSelectedItem();
+        }
+
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            About aboutDiag = new();
+            aboutDiag.ShowDialog();
+            aboutDiag.Dispose();
+        }
+
+        private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Settings settingsDiag = new(this);
+            settingsDiag.ShowDialog();
+            settingsDiag.Dispose();
+
+            if (GCL != "Powershell")
+            {
+                designTab.TabPages.Insert(1, eventsPage);
+            }
+            else
+            {
+                designTab.TabPages.Remove(eventsPage);
+            }    
+
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+            fileInfo.source_base = null;
+            designeTab_SelectedIndexChanged(null, null);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
         }
     }
 }

@@ -335,6 +335,63 @@ namespace WDDN
             return strProperty;
         }
 
+        internal static string Property2String_Powershell(Control ctrl, PropertyInfo item)
+        {
+            string strProperty = "";
+            Type type = item.GetValue(ctrl)!.GetType();
+            string str2 = item.GetValue(ctrl)!.ToString()!;
+
+            //Console.WriteLine(item.Name);
+            //Console.WriteLine(type);
+
+            switch (type)
+            {
+                case Type t when t == typeof(System.Drawing.Point):
+                    Point point = (Point)item.GetValue(ctrl)!;
+                    strProperty = " = new-object " + type.ToString() + "(" + point.X + "," + point.Y + ")";
+                    break;
+                case Type t when t == typeof(System.Drawing.Size):
+                    Size size = (Size)item.GetValue(ctrl)!;
+                    strProperty = " = new-object " + type.ToString() + "(" + size.Width + "," + size.Height + ")";
+                    break;
+                case Type t when t == typeof(System.String):
+                    strProperty = " =  " + "\"" + str2 + "\"";
+                    break;
+                case Type t when t == typeof(System.Boolean):
+                    strProperty = " =  " + str2.ToLower() + "";
+                    break;
+                case Type t when t == typeof(System.Windows.Forms.AnchorStyles):
+                    strProperty = AnchorStyles2String(item.GetValue(ctrl));
+                    break;
+                case Type t when t == typeof(System.Int32):
+                    strProperty = " = " + int.Parse(str2) + "";
+                    break;
+                case Type t when t == typeof(System.Windows.Forms.DockStyle) ||
+                                 t == typeof(System.Drawing.ContentAlignment) ||
+                                 t == typeof(System.Windows.Forms.ScrollBars) ||
+                                 t == typeof(System.Windows.Forms.HorizontalAlignment) ||
+                                 t == typeof(System.Windows.Forms.FormWindowState) ||
+                                 t == typeof(System.Windows.Forms.FixedPanel) ||
+                                 t == typeof(System.Windows.Forms.PictureBoxSizeMode) ||
+                                 t == typeof(System.Windows.Forms.View) ||
+                                 t == typeof(System.Windows.Forms.Orientation) ||
+                                 t == typeof(System.Windows.Forms.FormBorderStyle) ||
+                                 t == typeof(System.Windows.Forms.AutoScaleMode) ||
+                                 t == typeof(System.Windows.Forms.FormStartPosition):
+
+                    strProperty = " = " + type.ToString() + "." + str2 + "";
+                    break;
+                case Type t when t == typeof(System.Drawing.Color):
+                    strProperty = " = " + Property2Color_Powershell(str2) + "";
+                    break;
+                case Type t when t == typeof(System.Drawing.Font):
+                    strProperty = " = " + Property2Font_Powershell(ctrl.Font) + "";
+                    break;
+            }
+
+            return strProperty;
+        }
+
         private static string Property2Font(Font font)
         {
             string[] split = font.ToString().Split(",");
@@ -361,6 +418,35 @@ namespace WDDN
             }
 
             string strProperty = "new System.Drawing.Font(\"" + font.Name + "\", " + strSize + strStyle;
+            return strProperty;
+        }
+
+        private static string Property2Font_Powershell(Font font)
+        {
+            string[] split = font.ToString().Split(",");
+            string strSize = split[1].Replace("Size=", "").Trim() + "F, ";
+
+            string strStyle = "";
+            split = font.Style.ToString().Split(",");
+
+            if (split.Length == 1)
+            {
+                strStyle = string.Format("System.Drawing.FontStyle.{0}, System.Drawing.GraphicsUnit.Point)", split[0]);
+            }
+            else if (split.Length == 2)
+            {
+                strStyle = string.Format("((System.Drawing.FontStyle)((System.Drawing.FontStyle.{0} | System.Drawing.FontStyle.{1}))), System.Drawing.GraphicsUnit.Point)", split[0].Trim(), split[1].Trim());
+            }
+            else if (split.Length == 3)
+            {
+                strStyle = string.Format("((System.Drawing.FontStyle)(((System.Drawing.FontStyle.{0} | System.Drawing.FontStyle.{1}) | System.Drawing.FontStyle.{2}))), System.Drawing.GraphicsUnit.Point)", split[0].Trim(), split[1].Trim(), split[2].Trim());
+            }
+            else if (split.Length == 4)
+            {
+                strStyle = string.Format("((System.Drawing.FontStyle)((((System.Drawing.FontStyle.{0} | System.Drawing.FontStyle.{1})  | System.Drawing.FontStyle.{2}) | System.Drawing.FontStyle.{3}))), System.Drawing.GraphicsUnit.Point)", split[0].Trim(), split[1].Trim(), split[2].Trim(), split[3].Trim());
+            }
+
+            string strProperty = "new-object System.Drawing.Font(\"" + font.Name + "\", " + strSize + strStyle;
             return strProperty;
         }
 
@@ -610,6 +696,221 @@ namespace WDDN
             return strRGB;
 
         }
+
+        private static string Property2Color_Powershell(string color)
+        {
+            List<string> systemColorName = new()
+            {
+                "ActiveBorder",
+                "ActiveCaption",
+                "ActiveCaptionText",
+                "AppWorkspace",
+                "ButtonFace",
+                "ButtonHighlight",
+                "ButtonShadow",
+                "Control",
+                "ControlDark",
+                "ControlDarkDark",
+                "ControlLight",
+                "ControlLightLight",
+                "ControlText",
+                "Desktop",
+                "GradientActiveCaption",
+                "GradientInactiveCaption",
+                "GrayText",
+                "Highlight",
+                "HighlightText",
+                "HotTrack",
+                "InactiveBorder",
+                "InactiveCaption",
+                "InactiveCaptionText",
+                "Info",
+                "InfoText",
+                "Menu",
+                "MenuBar",
+                "MenuHighlight",
+                "MenuText",
+                "ScrollBar",
+                "Window",
+                "WindowFrame",
+                "WindowText",
+            };
+
+            List<string> colorName = new()
+            {
+                "Black",
+                "DimGray",
+                "Gray",
+                "DarkGray",
+                "Silver",
+                "LightGray",
+                "Gainsboro",
+                "WhiteSmoke",
+                "White",
+                "RosyBrown",
+                "IndianRed",
+                "Brown",
+                "Firebrick",
+                "LightCoral",
+                "Maroon",
+                "DarkRed",
+                "Red",
+                "Snow",
+                "MistyRose",
+                "Salmon",
+                "Tomato",
+                "DarkSalmon",
+                "Coral",
+                "OrangeRed",
+                "LightSalmon",
+                "Sienna",
+                "SeaShell",
+                "Chocolate",
+                "SaddleBrown",
+                "SandyBrown",
+                "PeachPuff",
+                "Peru",
+                "Linen",
+                "Bisque",
+                "DarkOrange",
+                "BurlyWood",
+                "Tan",
+                "AntiqueWhite",
+                "NavajoWhite",
+                "BlanchedAlmond",
+                "PapayaWhip",
+                "Moccasin",
+                "Orange",
+                "Wheat",
+                "OldLace",
+                "FloralWhite",
+                "DarkGoldenrod",
+                "Goldenrod",
+                "Cornsilk",
+                "Gold",
+                "Khaki",
+                "LemonChiffon",
+                "PaleGoldenrod",
+                "DarkKhaki",
+                "Beige",
+                "LightGoldenrodYellow",
+                "Olive",
+                "Yellow",
+                "LightYellow",
+                "Ivory",
+                "OliveDrab",
+                "YellowGreen",
+                "DarkOliveGreen",
+                "GreenYellow",
+                "Chartreuse",
+                "LawnGreen",
+                "DarkSeaGreen",
+                "ForestGreen",
+                "LimeGreen",
+                "LightGreen",
+                "PaleGreen",
+                "DarkGreen",
+                "Green",
+                "Lime",
+                "Honeydew",
+                "SeaGreen",
+                "MediumSeaGreen",
+                "SpringGreen",
+                "MintCream",
+                "MediumSpringGreen",
+                "MediumAquamarine",
+                "Aquamarine",
+                "Turquoise",
+                "LightSeaGreen",
+                "MediumTurquoise",
+                "DarkSlateGray",
+                "PaleTurquoise",
+                "Teal",
+                "DarkCyan",
+                "Cyan",
+                "Aqua",
+                "LightCyan",
+                "Azure",
+                "DarkTurquoise",
+                "CadetBlue",
+                "PowderBlue",
+                "LightBlue",
+                "DeepSkyBlue",
+                "SkyBlue",
+                "LightSkyBlue",
+                "SteelBlue",
+                "AliceBlue",
+                "DodgerBlue",
+                "SlateGray",
+                "LightSlateGray",
+                "LightSteelBlue",
+                "CornflowerBlue",
+                "RoyalBlue",
+                "MidnightBlue",
+                "Lavender",
+                "Navy",
+                "DarkBlue",
+                "MediumBlue",
+                "Blue",
+                "GhostWhite",
+                "SlateBlue",
+                "DarkSlateBlue",
+                "MediumSlateBlue",
+                "MediumPurple",
+                "BlueViolet",
+                "Indigo",
+                "DarkOrchid",
+                "DarkViolet",
+                "MediumOrchid",
+                "Thistle",
+                "Plum",
+                "Violet",
+                "Purple",
+                "DarkMagenta",
+                "Fuchsia",
+                "Magenta",
+                "Orchid",
+                "MediumVioletRed",
+                "DeepPink",
+                "HotPink",
+                "LavenderBlush",
+                "PaleVioletRed",
+                "Crimson",
+            };
+
+            color = color.Replace("Color [", "").Replace("]", "");
+            string? strSystemColor = "[System.Drawing.SystemColors]::";
+            string? strColor = "[System.Drawing.Color]::";
+            string? strRGB = "[System.Drawing.Color]::FromArgb(";
+
+            if (color == "Transparent")
+            {
+                return "Color.Transparent";
+            }
+
+            for (int i = 0; i < systemColorName.Count; i++)
+            {
+                if (systemColorName[i] == color)
+                {
+                    return strSystemColor + color;
+                }
+            }
+
+            for (int i = 0; i < colorName.Count; i++)
+            {
+                if (colorName[i] == color)
+                {
+                    return strColor + color;
+                }
+            }
+
+            color = color.Replace("A", "").Replace("R", "").Replace("G", "").Replace("B", "").Replace("=", "");
+            string[] split = color.Split(",");
+            strRGB += split[1] + "," + split[2] + "," + split[3] + ")";
+            return strRGB;
+
+        }
+
         internal Control? GetBaseCtrl()
         {
             Type type = this.ctrl!.GetType();

@@ -7,11 +7,13 @@ namespace WDDN
     {
         private cls_userform? form;
         private cls_controls? cls_ctrl;
-        public cls_user_datagridview()
+        private MainForm parentForm;
+        public cls_user_datagridview(MainForm parentForm)
         {
             InitializeComponent();
             this.DoubleBuffered = true;
             this.AllowUserToAddRows = false;
+            this.parentForm = parentForm;
             this.CellMouseDoubleClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(cls_user_datagridview1_CellMouseDoubleClick);
         }
 
@@ -178,18 +180,35 @@ namespace WDDN
             }
         }
 
+
+        // LOOK TO REBUILD
         private string GetDecHandler(string? eventName, string newHandler, string funcName, string ctrlName)
         {
             string decHandler;
-            if (this.form != null)
+            switch (parentForm.GCL)
             {
-                decHandler = "this." + eventName + " += " + newHandler + "(" + funcName + ");";
+                case "Powershell":
+                    if (this.form != null)
+                    {
+                        decHandler = "$Form.Add_" + eventName + "({\r\n    # Your commands here\r\n});";
+                    }
+                    else
+                    {
+                        decHandler = "$" + ctrlName + ".Add_" + eventName + "({\r\n    # Your commands here\r\n});";
+                    }
+                    return decHandler;
+                case "CSharp":
+                default:
+                    if (this.form != null)
+                    {
+                        decHandler = "this." + eventName + " += " + newHandler + "(" + funcName + ");";
+                    }
+                    else
+                    {
+                        decHandler = "this." + ctrlName + "." + eventName + " += " + newHandler + "(" + funcName + ");";
+                    }
+                    return decHandler;
             }
-            else
-            {
-                decHandler = "this." + ctrlName + "." + eventName + " += " + newHandler + "(" + funcName + ");";
-            }
-            return decHandler;
         }
 
         private void SetArguments(ref string funcParam, ref string param, ParameterInfo[] pars)

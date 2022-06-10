@@ -445,6 +445,21 @@
             source_base.Add("        private void InitializeComponent()");
             return source_base;
         }
+
+        internal static List<string> NewFile_Powershell()
+        {
+            List<string> source_base = new();
+
+            source_base.Add("Add-Type -AssemblyName System.Windows.Forms");
+            source_base.Add("Add-Type -AssemblyName System.Drawing");
+            source_base.Add("");
+            source_base.Add("$Form = [System.Windows.Forms.Form]::new()");
+            source_base.Add("");
+            return source_base;
+        }
+
+
+        #region Saving
         internal static void SaveAs(string FileName, string SourceCode)
         {
             File.WriteAllText(FileName, SourceCode);
@@ -468,6 +483,11 @@
                 File.WriteAllText(dlg.FileName, SourceCode);
             }
         }
+
+#endregion
+
+#region INI IO
+
         internal static void ReadIni(MainForm form, string fileName, SplitContainer splitContainer1, SplitContainer splitContainer2)
         {
             string[] split = Application.ExecutablePath.Split("/");
@@ -503,6 +523,12 @@
                     case "SplitContainer2.SplitDistance":
                         splitContainer2.SplitterDistance = int.Parse(split[1]);
                         break;
+                    case "DeletionKey":
+                        form.DeletionKey = split[1];
+                        break;
+                    case "Lang":
+                        form.GCL = split[1];
+                        break;
                 }
             }
         }
@@ -519,10 +545,13 @@
             line += "WndPos.Y:" + form.Top.ToString() + "\n";
             line += "WndSize.Width:" + form.Width.ToString() + "\n";
             line += "WndSize.Height:" + form.Height.ToString() + "\n";
+            line += "DeletionKey:" + form.DeletionKey + "\n";
+            line += "Lang:" + form.GCL + "\n";
             line += "SplitContainer1.SplitDistance:" + splitContainer1.SplitterDistance.ToString() + "\n";
             line += "SplitContainer2.SplitDistance:" + splitContainer2.SplitterDistance.ToString() + "\n";
 
             File.WriteAllText(filePath, line);
         }
     }
+#endregion
 }
