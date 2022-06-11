@@ -1137,10 +1137,5 @@ namespace WDDN
         }
 
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-
-        private void debugToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            RecreateEvents();
-        }
     }
 }
