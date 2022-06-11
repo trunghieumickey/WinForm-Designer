@@ -92,6 +92,15 @@ namespace WDDN
         }
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
+
+
+            if (GCL != "CSharp")
+            {
+                MidSessionLangSwitch = true;
+                GCL = "Csharp";
+                RecreateEvents();
+            }
+
             designTab.SelectedIndex = 0;
             designTab.SelectedIndex = 1;
 
@@ -1134,6 +1143,7 @@ namespace WDDN
 
             fileInfo.source_base = null;
             designeTab_SelectedIndexChanged(null, null);
+            MidSessionLangSwitch = false;
         }
 
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
