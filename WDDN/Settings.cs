@@ -33,6 +33,11 @@ namespace WDDN
 
         private void Save_btn_Click(object sender, EventArgs e)
         {
+            if (parentForm.GCL != GCL_ddb.Text)
+            {
+                parentForm.MidSessionLangSwitch = true;
+            }
+
             parentForm.GCL = GCL_ddb.Text;
             parentForm.DeletionKey = DKC_ddb.Text;
             this.Close();

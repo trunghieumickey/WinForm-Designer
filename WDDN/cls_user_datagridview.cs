@@ -190,7 +190,7 @@ namespace WDDN
                 case "Powershell":
                     if (this.form != null)
                     {
-                        decHandler = "$Form.Add_" + eventName + "({\r\n    # Your commands here\r\n});";
+                        decHandler = "$" + ctrlName + ".Add_" + eventName + "({\r\n    # Your commands here\r\n});";
                     }
                     else
                     {

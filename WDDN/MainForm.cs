@@ -14,6 +14,7 @@ namespace WDDN
 
         public string DeletionKey = "Alt + Delete";
         public string GCL = "CSharp";
+        public bool MidSessionLangSwitch = false;
 
         public MainForm()
         {
@@ -217,6 +218,102 @@ namespace WDDN
             }
         }
 
+        private void RecreateEvents()
+        {
+
+            //if (!MidSessionLangSwitch)
+            //    return;
+
+            List<string> NewdecHandler;
+
+            switch (GCL)
+            {
+                case "Powershell":
+
+                    NewdecHandler = new();
+
+                    //stage1 form
+
+                    foreach (string RawEvnt in this.userForm.decHandler)
+                    {
+
+                        // check if handlers haven't already been converted.
+
+                        if (RawEvnt.StartsWith("$"))
+                            return;
+
+                        string[] split = RawEvnt.Split("+=")[0].Split(".");
+                        string controlName = userForm.memForm.Name;
+                        string eventName = split[split.Length - 1].Trim();
+                        NewdecHandler.Add("$" + controlName + ".Add_" + eventName + "({\r\n    # Your commands here\r\n});");
+                    }
+
+                    this.userForm.decHandler = NewdecHandler;
+
+                    //stage 2 - controls
+
+                    foreach (cls_controls ctrl in userForm.CtrlItems)
+                    {
+                        NewdecHandler = new();
+
+                        foreach (string RawEvnt in ctrl.decHandler)
+                        {
+                            string[] split = RawEvnt.Split("+=")[0].Split(".");
+                            string controlName = ctrl.ctrl!.Name;
+                            string eventName = split[split.Length - 1].Trim();
+                            NewdecHandler.Add("$" + controlName + ".Add_" + eventName + "({\r\n    # Your commands here\r\n});");
+                        }
+
+                        ctrl.decHandler = NewdecHandler;
+
+                    }
+
+                    break;
+                case "CSharp":
+                default:
+
+                    NewdecHandler = new();
+
+                    //stage1 form
+
+                    foreach (string RawEvnt in this.userForm.decHandler)
+                    {
+
+                        // check if handlers haven't already been converted.
+
+                        if (!RawEvnt.StartsWith("$"))
+                            return;
+
+                        string controlName = userForm.memForm.Name;
+                        string eventName = RawEvnt.Substring(RawEvnt.IndexOf(".Add_") + 5).Split(".")[0].Split("(")[0].Trim();
+                        string tmp = "this." + eventName + " += new System.EventHandler(" + controlName + "_" + eventName + ");";
+                        NewdecHandler.Add("this." + eventName + " += new System.EventHandler(" + controlName + "_" + eventName + ");");
+                    }
+
+                    this.userForm.decHandler = NewdecHandler;
+
+                    //stage 2 - controls
+
+                    foreach (cls_controls ctrl in userForm.CtrlItems)
+                    {
+                        NewdecHandler = new();
+
+                        foreach (string RawEvnt in ctrl.decHandler)
+                        {
+                            string controlName = ctrl.ctrl!.Name;
+                            string eventName = RawEvnt.Substring(RawEvnt.IndexOf(".Add_") + 5).Split(".")[0].Split("(")[0].Trim();
+                            string tmp2 = controlName + "." + eventName + " += new System.EventHandler(" + controlName + "_" + eventName + ");";
+                            NewdecHandler.Add(controlName + "." + eventName + " += new System.EventHandler(" + controlName + "_" + eventName + ");");
+                        }
+
+                        ctrl.decHandler = NewdecHandler;
+
+                    }
+
+                    break;
+            }
+        }
+
 #region Powershell
 
         private string Create_SourceCode_Powershell()
@@ -268,7 +365,9 @@ namespace WDDN
             }
             source += "}\r\n";
             */
-            source += "\r\n[void]$Form.ShowDialog()\r\n";
+
+            source += "\r\n[void]$" + userForm.memForm.Name + ".ShowDialog()\r\n";
+            //source += "\r\n[void]$Form.ShowDialog()\r\n";
 
 
             // events function
@@ -336,8 +435,8 @@ namespace WDDN
                     lstResume.Add( "$" + userForm.CtrlItems[i].ctrl!.Name + ".ResumeLayout($false)\r\n");
                 }
             }
-            lstSuspend.Add(space + "$Form.SuspendLayout()\r\n");
-            lstResume.Add(space + "$Form.ResumeLayout($false)\r\n");
+            lstSuspend.Add(space + "$" + userForm.memForm.Name + ".SuspendLayout()\r\n");
+            lstResume.Add(space + "$" + userForm.memForm.Name + ".Form.ResumeLayout($false)\r\n");
 
             return source;
         }
@@ -526,7 +625,7 @@ namespace WDDN
                     {
                         if (item.GetValue(memForm)!.ToString() != item.GetValue(baseForm)!.ToString())
                         {
-                            string str1 = space + "$Form." + item.Name;
+                            string str1 = space + "$" + userForm.memForm.Name + "." + item.Name;
                             string strProperty = cls_controls.Property2String_Powershell(memForm, item);
 
                             if (strProperty != "")
@@ -548,7 +647,7 @@ namespace WDDN
             {
                 if (userForm.CtrlItems[i].ctrl!.Parent == userForm)
                 {
-                    source += space + "$Form.Controls.Add($" + userForm.CtrlItems[i].ctrl!.Name + ")\r\n";
+                    source += space + "$" + userForm.memForm.Name + ".Controls.Add($" + userForm.CtrlItems[i].ctrl!.Name + ")\r\n";
                 }
             }
             return source;
@@ -609,7 +708,7 @@ namespace WDDN
 
         #endregion
 
-        #region CSharp
+#region CSharp
 
         private string Create_SourceCode()
         {
@@ -915,6 +1014,10 @@ namespace WDDN
                 Control? ctrl = propertyGrid.SelectedObject as Control;
                 ctrl!.Name = propertyCtrlName!.Text;
             }
+            else if (propertyGrid!.SelectedObject != null && propertyGrid.SelectedObject is Form == true)
+            {
+                userForm.memForm.Name = propertyCtrlName!.Text;
+            }
         }
         private void ctrlsTab_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -1008,20 +1111,36 @@ namespace WDDN
             Settings settingsDiag = new(this);
             settingsDiag.ShowDialog();
             settingsDiag.Dispose();
+            ApplySettings();
+        }
 
-            if (GCL != "Powershell")
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+
+        private void ApplySettings()
+        {
+            if (GCL != "Powershell" && MidSessionLangSwitch == true)
             {
-                designTab.TabPages.Insert(1, eventsPage);
+                designTab.TabPages.Insert(2, eventsPage);
             }
             else
             {
                 designTab.TabPages.Remove(eventsPage);
-            }    
+            }
 
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+            if (MidSessionLangSwitch)
+            {
+                RecreateEvents();
+            }
+
             fileInfo.source_base = null;
             designeTab_SelectedIndexChanged(null, null);
+        }
+
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+        private void debugToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            RecreateEvents();
         }
     }
 }

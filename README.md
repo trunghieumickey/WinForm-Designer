@@ -4,10 +4,12 @@ WDDN or Winform Designer DotNet is a tool based on [SWD4CS](https://github.com/h
 # Features
 * C# Form Creation
 * Powershell Form Creation
+* Conversion of C# Forms to powershell
+
 
 # Development environment
  * Windows10+
- * VisualStudio2022 C#
+ * Visual Studio 2022
  * .net6.0
  
 ## Screenshots  
