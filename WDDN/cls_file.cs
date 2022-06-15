@@ -453,8 +453,6 @@
             source_base.Add("Add-Type -AssemblyName System.Windows.Forms");
             source_base.Add("Add-Type -AssemblyName System.Drawing");
             source_base.Add("");
-            source_base.Add("$Form = [System.Windows.Forms.Form]::new()");
-            source_base.Add("");
             return source_base;
         }
 

@@ -344,6 +344,7 @@ namespace WDDN
             */
 
             source = Create_Code_Instance_Powershell(source, space);
+            source += "$" + userForm.memForm.Name + " = [System.Windows.Forms.Form]::new()\r\n\r\n";
             source = Create_Code_Suspend_Resume_Powershell(source, lstSuspend, lstResume, space);
 
             // suspend
@@ -444,7 +445,7 @@ namespace WDDN
                     lstResume.Add( "$" + userForm.CtrlItems[i].ctrl!.Name + ".ResumeLayout($false)\r\n");
                 }
             }
-            lstSuspend.Add(space + "$" + userForm.memForm.Name + ".SuspendLayout()\r\n");
+            lstSuspend.Add(space + "$" + userForm.memForm.Name + ".SuspendLayout()\r\n\r\n");
             lstResume.Add(space + "$" + userForm.memForm.Name + ".Form.ResumeLayout($false)\r\n");
 
             return source;
