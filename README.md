@@ -1,5 +1,5 @@
 # WinForms Designer
-Winformss Designer is a tool based on [SWD4CS](https://github.com/hry2566/SWD4CS) which is intended to be a light weight form creator/editor to be used outside of Visual Studio. This fork is intended for making a distribution.
+Winforms Designer is a tool based on [SWD4CS](https://github.com/hry2566/SWD4CS) which is intended to be a light weight form creator/editor to be used outside of Visual Studio. This fork is intended for making a distribution.
 
 # Features
 * C# Form Creation
