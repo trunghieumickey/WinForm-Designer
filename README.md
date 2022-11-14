@@ -1,5 +1,5 @@
 # WinFormd Designer
-Winformd Designer is a tool based on [SWD4CS](https://github.com/hry2566/SWD4CS) which is intended to be a light weight form creator/editor to be used outside of Visual Studio.
+Winformd Designer is a tool based on [SWD4CS](https://github.com/hry2566/SWD4CS) which is intended to be a light weight form creator/editor to be used outside of Visual Studio. This fork is intended for making a distribution.
 
 # Features
 * C# Form Creation
@@ -67,8 +67,3 @@ Winformd Designer is a tool based on [SWD4CS](https://github.com/hry2566/SWD4CS)
  ・System.Windows.Forms.FormBorderStyle  
  ・System.Windows.Forms.AutoScaleMode  
  ・System.Drawing.Font  
-
-## How to add a control
-* Added to "// Edit the following when adding a control".
-・cls_form.cs  
-・cls_control.cs  
