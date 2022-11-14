@@ -8,14 +8,10 @@ WDDN or Winform Designer DotNet is a tool based on [SWD4CS](https://github.com/h
 
 
 # Development environment
- * Windows10+
- * Visual Studio 2022
- * .net6.0
- 
-## Screenshots  
-![WDDN](https://user-images.githubusercontent.com/86605611/152679486-e8f7bbed-69b4-4186-b402-35d7bd2fec8f.png)
-![WDDN](https://user-images.githubusercontent.com/86605611/152784518-c135ec3a-e156-4163-8f8d-90cc023d8448.png)
-Control Tree is display only
+ * Windows 11
+ * Visual Studio 2022.4
+ * .Net 7.0
+
  
 ## Implementation
  ・Some property changes
