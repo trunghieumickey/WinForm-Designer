@@ -1,5 +1,5 @@
-# WDDN
-WDDN or Winform Designer DotNet is a tool based on [SWD4CS](https://github.com/hry2566/SWD4CS) which is intended to be a light weight form creator/editor to be used outside of VisualStudio. This fork includes the ability create forms for powershell.
+# WinFormd Designer
+Winformd Designer is a tool based on [SWD4CS](https://github.com/hry2566/SWD4CS) which is intended to be a light weight form creator/editor to be used outside of Visual Studio.
 
 # Features
 * C# Form Creation
