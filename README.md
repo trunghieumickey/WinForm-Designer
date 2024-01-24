@@ -1,4 +1,4 @@
-# SWD4CS
+# SWD4CSS
  * SWD4CSは、Simple WinForms Designer for CSharp (VSCode)の略  
  * VisualStudioは重いので、VSCodeをよく使う。がデザイナがない。  
  * デザイナの作り方が全く分からず、思い付くままに書いてみた。  
